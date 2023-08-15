@@ -14,6 +14,7 @@ from googleapiclient.discovery import build
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
+print(SUPABASE_URL)
 SUPABASE_API_KEY = os.environ.get("SUPABASE_API_KEY")
 # Create a Supabase client
 client = supabase.Client(SUPABASE_URL, SUPABASE_API_KEY)
@@ -248,9 +249,7 @@ def getEmails():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "/Users/rittikbasu/Downloads/gmail.json", SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
 
         # Save the access token in token.pickle file for the next run
