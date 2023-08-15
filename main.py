@@ -20,7 +20,7 @@ client = supabase.Client(SUPABASE_URL, SUPABASE_API_KEY)
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-max_results = 4
+max_results = 1
 
 
 def extract_metrics(data, subject, date):
