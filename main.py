@@ -14,12 +14,13 @@ from googleapiclient.discovery import build
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-print(SUPABASE_URL)
 SUPABASE_API_KEY = os.environ.get("SUPABASE_API_KEY")
 # Create a Supabase client
 client = supabase.Client(SUPABASE_URL, SUPABASE_API_KEY)
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+RIZE_MAIL_ID = os.environ.get("RIZE_MAIL_ID")
 
 max_results = 1
 
@@ -82,16 +83,14 @@ def extract_metrics(data, subject, date):
 
         raw_data = process_raw_data(data)
         metrics_dict["raw_data"] = raw_data
-
         metrics_dict["embedding"] = get_embedding(metrics_dict["gpt_context"])
 
-        insert_response = client.table("timelog").insert([metrics_dict]).execute()
-        print(insert_response)
-        # print(metrics_dict)
+        client.table("timelog").insert([metrics_dict]).execute()
+
         return metrics_dict
 
     except Exception as e:
-        print("here:", e)
+        print("extract_metrics:", e)
 
 
 def get_embedding(gpt_context):
@@ -223,12 +222,10 @@ def getDate(text, date):
     match = re.match(pattern, text)
     day = match.group(1)
 
-    if int(dateMatch) == int(match.group(3)):
-        return date, day
-    else:
-        # get 1 day before date from dateObj
+    if int(dateMatch) != int(match.group(3)):
         date = dateObj - timedelta(days=1)
-        return date, day
+
+    return date, day
 
 
 def getEmails():
@@ -259,13 +256,13 @@ def getEmails():
     # Connect to the Gmail API
     service = build("gmail", "v1", credentials=creds)
 
-    # Request a list of last 10 messages from 'rize@icloud.com'
+    # Request a list of last 10 messages from 'rize'
     result = (
         service.users()
         .messages()
         .list(
             userId="me",
-            q="from:notification_at_rize_io_8bd7ndqjxw6290_e2265182@icloud.com subject:Your Daily Report",
+            q=f"from:{RIZE_MAIL_ID} subject:Your Daily Report",
             maxResults=max_results,
         )
         .execute()
